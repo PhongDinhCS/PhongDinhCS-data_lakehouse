@@ -1,0 +1,37 @@
+[root@namenode hadoop]# hdfs dfs -ls hdfs://namenode:8020/
+Found 1 items
+drwxrwxrwx   - hadoop supergroup          0 2024-06-04 00:21 hdfs://namenode:8020/delta-table
+[root@namenode hadoop]# 
+ChatGPT
+The output you provided confirms that the directory /delta-table in HDFS has the permissions drwxrwxrwx.
+
+d: Indicates that it is a directory.
+rwxrwxrwx: Represents the permissions, where r stands for read, w stands for write, and x stands for execute. The first set of permissions (rwx) is for the owner, the second set is for the group, and the third set is for others. In this case, all users have full permissions (rwx) for the directory.
+This output indicates that the permissions have been successfully set to 755 (rwxr-xr-x) for the /delta-table directory in HDFS.
+
+can delta-spark have permission to mkdir to hdfs://namenode:8020/
+ChatGPT
+Yes, you can grant the necessary permissions to the delta-spark user so that it can create directories in HDFS at hdfs://namenode:8020/.
+
+To grant permissions, you typically need to modify the Hadoop configuration or adjust the HDFS ACLs (Access Control Lists) to allow the delta-spark user to perform the desired actions.
+
+Here are the general steps you might take:
+
+Adjust HDFS ACLs: You can use the hdfs dfs -setfacl command to set ACLs on HDFS directories. For example, you could grant write permission to the delta-spark user for the root directory (/) or a specific directory where you want it to create directories.
+
+bash
+Copy code
+hdfs dfs -setfacl -m user:delta-spark:rwx /
+This command grants the delta-spark user read, write, and execute permissions on the root directory (/). Adjust the path as needed.
+
+Update Hadoop Configuration: Depending on your Hadoop setup, you may need to adjust the Hadoop configuration files to grant permissions to the delta-spark user. This might involve modifying the hdfs-site.xml or core-site.xml files.
+
+Verify Permissions: After making changes, verify that the delta-spark user has the necessary permissions to create directories in HDFS by running a test command like hdfs dfs -mkdir.
+
+It's essential to ensure that you understand the security implications of granting permissions to users and groups in Hadoop. You should carefully consider the least privilege principle and only grant the permissions necessary for the delta-spark user to perform its required actions.
+
+
+
+
+
+

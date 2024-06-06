@@ -1,0 +1,7 @@
+[0m[[0m[31merror[0m] [0m[0m/home/ubuntu2020/phongdinhcs_project/phongdt_data_lakehouse_architecture_research/backend/ingest_dir/KafkaToHDFS.scala:29:8: overloaded method value foreachBatch with alternatives:[0m
+[0m[[0m[31merror[0m] [0m[0m  (function: org.apache.spark.api.java.function.VoidFunction2[org.apache.spark.sql.Dataset[org.apache.spark.sql.Row],java.lang.Long])org.apache.spark.sql.streaming.DataStreamWriter[org.apache.spark.sql.Row] <and>[0m
+[0m[[0m[31merror[0m] [0m[0m  (function: (org.apache.spark.sql.Dataset[org.apache.spark.sql.Row], scala.Long) => Unit)org.apache.spark.sql.streaming.DataStreamWriter[org.apache.spark.sql.Row][0m
+[0m[[0m[31merror[0m] [0m[0m cannot be applied to ((org.apache.spark.sql.Dataset[org.apache.spark.sql.Row], Any) => org.apache.spark.sql.Dataset[org.apache.spark.sql.Row])[0m
+[0m[[0m[31merror[0m] [0m[0m      .foreachBatch { (batchDF, batchId) =>[0m
+[0m[[0m[31merror[0m] [0m[0m       ^[0m
+[0m[[0m[31merror[0m] [0m[0mone error found[0m

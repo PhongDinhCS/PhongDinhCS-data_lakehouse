@@ -1,0 +1,10 @@
+
+
+172.18.0.99 kafka
+172.18.0.98 namenode
+172.18.0.97 datanode
+172.18.0.96 datanode2
+172.18.0.95 datanode3
+172.18.0.94 resourcemanager
+172.18.0.93 nodemanager
+172.18.0.92 delta-spark

@@ -123,5 +123,8 @@ docker cp ./backend/DeltaTableTestReadAuto.scala delta-spark1:/opt/spark/work-di
 :load DeltaTableTestRead.scala
 :load DeltaTableTestReadAuto.scala
 
+
+:load DeltaTableStockPriceReadLoop.scala
+:load DeltaTableStockPriceUpdateLoop.scala
 ---------
 

@@ -17,6 +17,7 @@ services:
 #docker stop namenode datanode datanode2 datanode3 resourcemanager nodemanager
 #docker rm namenode datanode datanode2 datanode3 resourcemanager nodemanager
 #docker-compose up -d namenode datanode datanode2 datanode3 resourcemanager nodemanager
+#docker restart namenode datanode datanode2 datanode3 resourcemanager nodemanager
 
   namenode:
     container_name: namenode
@@ -32,7 +33,11 @@ services:
     networks:
       lakehouse_network:
         ipv4_address: 172.18.0.98
-    # run this script in namenode after run docker-compose: hdfs dfs -chmod 777 /
+    depends_on:
+      - datanode
+      - datanode2
+      - datanode3
+    # run this script in namenode after run docker-compose: docker exec -it namenode bash hdfs dfs -chmod 777 /
     
 
   datanode:
@@ -79,6 +84,11 @@ services:
     networks:
       lakehouse_network:
         ipv4_address: 172.18.0.94
+    depends_on:
+      - namenode
+      - datanode
+      - datanode2
+      - datanode3
 
   nodemanager:
     container_name: nodemanager

@@ -2,24 +2,37 @@
 docker stop namenode datanode datanode2 datanode3 resourcemanager nodemanager
 docker rm namenode datanode datanode2 datanode3 resourcemanager nodemanager
 docker-compose up -d namenode datanode datanode2 datanode3 resourcemanager nodemanager
+docker restart namenode datanode datanode2 datanode3 resourcemanager nodemanager
 
-// run this script in namenode after run docker-compose: 
+// run this script to grant permission for other users can write to namenode hdfs 
 // Local host
-docker exec -it namenode bash
-// inside namenode
-hdfs dfs -chmod 777 /
+docker exec -it namenode bash hdfs dfs -chmod 777 /
 -------------------------------------------------------------------------------
 
-docker cp /home/ubuntu2020/phongdinhcs_project/phongdt_data_lakehouse_architecture_research/hadoop delta-spark:opt/spark/work-dir
-delta-spark:/opt/spark/work-dir/hadoop/bin/hdfs
+// we need to install Hadoop library inside Spark then Spark can use hdfs function.
+// by download the release hadoop-X.Y.Z-src.tar.gz https://hadoop.apache.org/releases.html 
+// extract the hadoop-X.Y.Z-src.tar.gz folder then rename the folder to hadoop.
+//copy the folder to current project directory (the same folder with docker-compose)
+
+docker cp hadoop delta-spark:opt/spark/work-dir
+
+docker exec -it delta-spark bash
+
+hadoop/bin/hdfs
 export PATH=/opt/spark/work-dir/hadoop/bin:$PATH
 export HADOOP_USER_NAME=hdfs
-hdfs dfs -mkdir hdfs://namenode:8020/delta-table
+
+hdfs dfs -mkdir hdfs://namenode:8020/lakehouse
+
+// we choose hdfs://namenode:8020/lakehouse directory inside hdfs is our lakehouse project home folder
+// we should save others table inside this hdfs://namenode:8020/lakehouse folder
 
 -------------------------------------------------------------------------------
 
 // inside delta-spark
 spark-shell --packages io.delta:delta-core_2.12:2.1.1
+
+
 // scala
 import org.apache.spark.sql.SparkSession
 import io.delta.tables._
@@ -35,7 +48,7 @@ object DeltaOnHDFS {
     val data = Seq((1, "a"), (2, "b"), (3, "c")).toDF("id", "value")
 
     // Write DataFrame as a Delta Table
-    data.write.format("delta").save("hdfs://namenode:8020/delta-table")
+    data.write.format("delta").save("hdfs://namenode:8020/lakehouse/delta-table-test")
 
     spark.stop()
   }
@@ -57,7 +70,7 @@ object ReadDeltaFromHDFS {
       .getOrCreate()
 
     // Load Delta table
-    val deltaDF = spark.read.format("delta").load("hdfs://namenode:8020/delta-table")
+    val deltaDF = spark.read.format("delta").load("hdfs://namenode:8020/lakehouse/delta-table-test")
 
     // Show DataFrame
     deltaDF.show()
@@ -69,7 +82,28 @@ object ReadDeltaFromHDFS {
 
 ReadDeltaFromHDFS.main(Array())
 
+--------------------------------------------------------------------------
+// Define a function to read the Delta table and sleep for 5 seconds
+def loadAndSleep(): Unit = {
+  ReadDeltaFromHDFS.main(Array())
+  Thread.sleep(5000) // Sleep for 5 seconds
+}
 
+// Start the loop
+while (true) {
+  loadAndSleep()
+}
+------------------------------------------------------------
+// Define a function to read the Delta table and sleep for 5 seconds
+def ReadDeltaFromHDFSloadAndSleep(): Unit = {
+  ReadDeltaFromHDFS.main(Array())
+  Thread.sleep(5000) // Sleep for 5 seconds
+}
+
+// Start the loop
+while (true) {
+  ReadDeltaFromHDFSloadAndSleep()
+}
 
 
 
@@ -78,4 +112,16 @@ ReadDeltaFromHDFS.main(Array())
 git add .
 git commit -m "take note this step"
 git push origin main
+
+-----------------------------------------------------------------------------------
+// Local Host
+docker cp ./backend/DeltaTableTestCreate.scala delta-spark1:/opt/spark/work-dir/ 
+docker cp ./backend/DeltaTableTestRead.scala delta-spark1:/opt/spark/work-dir/ 
+docker cp ./backend/DeltaTableTestReadAuto.scala delta-spark1:/opt/spark/work-dir/
+
+// scala
+:load DeltaTableTestRead.scala
+:load DeltaTableTestReadAuto.scala
+
+---------
 

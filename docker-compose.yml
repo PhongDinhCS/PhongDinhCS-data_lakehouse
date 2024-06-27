@@ -13,11 +13,12 @@ services:
         aliases:
           - kafka
 
+
 #install hadoop hdfs docker container
-#docker stop namenode datanode datanode2 datanode3 resourcemanager nodemanager
-#docker rm namenode datanode datanode2 datanode3 resourcemanager nodemanager
-#docker-compose up -d namenode datanode datanode2 datanode3 resourcemanager nodemanager
-#docker restart namenode datanode datanode2 datanode3 resourcemanager nodemanager
+#docker stop namenode datanode1 datanode2 resourcemanager nodemanager
+#docker rm namenode datanode1 datanode2 resourcemanager nodemanager
+#docker-compose up -d namenode datanode1 datanode2 resourcemanager nodemanager
+#docker restart namenode datanode1 datanode2 resourcemanager nodemanager
 
   namenode:
     container_name: namenode
@@ -29,23 +30,22 @@ services:
     env_file:
       - ./config
     environment:
-      ENSURE_NAMENODE_DIR: "/tmp/hadoop-root/dfs/name"
+      ENSURE_NAMENODE_DIR: "/hadoop/dfs/name"
+    volumes:
+      - ./hadoop/dfs/name:/hadoop/dfs/name
     networks:
       lakehouse_network:
         ipv4_address: 172.18.0.98
-    depends_on:
-      - datanode
-      - datanode2
-      - datanode3
     # run this script in namenode after run docker-compose: docker exec -it namenode bash hdfs dfs -chmod 777 /
-    
 
-  datanode:
-    container_name: datanode
+  datanode1:
+    container_name: datanode1
     image: apache/hadoop:3
     command: ["hdfs", "datanode"]
     env_file:
       - ./config  
+    volumes:
+      - ./hadoop/dfs/data1:/hadoop/dfs/data
     networks:
       lakehouse_network:
         ipv4_address: 172.18.0.97
@@ -56,19 +56,11 @@ services:
     command: ["hdfs", "datanode"]
     env_file:
       - ./config
+    volumes:
+      - ./hadoop/dfs/data2:/hadoop/dfs/data
     networks:
       lakehouse_network:
         ipv4_address: 172.18.0.96
-
-  datanode3:
-    container_name: datanode3
-    image: apache/hadoop:3
-    command: ["hdfs", "datanode"]
-    env_file:
-      - ./config
-    networks:
-      lakehouse_network:
-        ipv4_address: 172.18.0.95
 
   resourcemanager:
     container_name: resourcemanager
@@ -80,15 +72,14 @@ services:
     env_file:
       - ./config
     volumes:
-      - ./test.sh:/opt/test.sh
+      - ./hadoop/test.sh:/opt/test.sh
     networks:
       lakehouse_network:
         ipv4_address: 172.18.0.94
     depends_on:
       - namenode
-      - datanode
+      - datanode1
       - datanode2
-      - datanode3
 
   nodemanager:
     container_name: nodemanager
@@ -99,59 +90,8 @@ services:
     networks:
       lakehouse_network:
         ipv4_address: 172.18.0.93
-  #   # Add HiveServer2 service
-  # hiveserver2:
-  #   image: apache/hive:4.0.0
-  #   container_name: hiveserver2
-  #   environment:
-  #     SERVICE_NAME: hiveserver2
-  #   ports:
-  #     - "10000:10000"
-  #     - "10002:10002"
-  #   networks:
-  #     - lakehouse_network
-
-  # # Add Metastore service
-  # metastore:
-  #   image: apache/hive:4.0.0
-  #   container_name: metastore
-  #   environment:
-  #     SERVICE_NAME: metastore
-  #   ports:
-  #     - "9083:9083"
-  #   depends_on:
-  #     - namenode
-  #     - datanode
-  #   networks:
-  #     - lakehouse_network
-
-# # Use Apache Spark 
-#   spark-master:
-#     image: apache/spark:latest
-#     container_name: spark-master
-#     command: /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master
-#     ports:
-#       - "8080:8080"
-#       - "7077:7077"
-#     environment:
-#       - SPARK_MASTER_HOST=spark-master
-#       - SPARK_MASTER_PORT=7077
-#     networks:
-#       - lakehouse_network
-
-#   spark-worker:
-#     image: apache/spark:latest
-#     container_name: spark-worker
-#     command: /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
-#     environment:
-#       - SPARK_WORKER_MEMORY=1g
-#       - SPARK_WORKER_CORES=1
-#     depends_on:
-#       - spark-master
-#     volumes:
-#       - ./spark_job.py:/spark_job.py
-#     networks:
-#       - lakehouse_network
+    depends_on:
+      - resourcemanager
 
 # Delta Spark container
   delta-spark:

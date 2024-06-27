@@ -1,3 +1,5 @@
+
+-----------------------------------------------------------------------------
 // Local_host
 docker stop namenode datanode datanode2 datanode3 resourcemanager nodemanager
 docker rm namenode datanode datanode2 datanode3 resourcemanager nodemanager
@@ -16,7 +18,7 @@ docker exec -it namenode bash hdfs dfs -chmod 777 /
 
 docker cp hadoop delta-spark:opt/spark/work-dir
 
-docker exec -it delta-spark bash
+docker exec -it delta-spark1 bash
 
 hadoop/bin/hdfs
 export PATH=/opt/spark/work-dir/hadoop/bin:$PATH

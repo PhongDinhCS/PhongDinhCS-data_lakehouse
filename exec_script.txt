@@ -18,13 +18,16 @@ docker exec -it namenode bash hdfs dfs -chmod 777 /
 
 docker cp hadoop delta-spark:opt/spark/work-dir
 
-docker exec -it delta-spark1 bash
+docker exec -it delta-spark bash
 
 hadoop/bin/hdfs
 export PATH=/opt/spark/work-dir/hadoop/bin:$PATH
+echo $PATH
 export HADOOP_USER_NAME=hdfs
+echo $HADOOP_USER_NAME
 
 hdfs dfs -mkdir hdfs://namenode:8020/lakehouse
+hdfs dfs -ls hdfs://namenode:8020/
 
 // we choose hdfs://namenode:8020/lakehouse directory inside hdfs is our lakehouse project home folder
 // we should save others table inside this hdfs://namenode:8020/lakehouse folder
@@ -117,9 +120,9 @@ git push origin main
 
 -----------------------------------------------------------------------------------
 // Local Host
-docker cp ./backend/DeltaTableTestCreate.scala delta-spark1:/opt/spark/work-dir/ 
-docker cp ./backend/DeltaTableTestRead.scala delta-spark1:/opt/spark/work-dir/ 
-docker cp ./backend/DeltaTableTestReadAuto.scala delta-spark1:/opt/spark/work-dir/
+docker cp ./backend/DeltaTableTestCreate.scala delta-spark:/opt/spark/work-dir/ 
+docker cp ./backend/DeltaTableTestRead.scala delta-spark:/opt/spark/work-dir/ 
+docker cp ./backend/DeltaTableTestReadAuto.scala delta-spark:/opt/spark/work-dir/
 
 // scala
 :load DeltaTableTestRead.scala
@@ -129,4 +132,15 @@ docker cp ./backend/DeltaTableTestReadAuto.scala delta-spark1:/opt/spark/work-di
 :load DeltaTableStockPriceReadLoop.scala
 :load DeltaTableStockPriceUpdateLoop.scala
 ---------
+#Grand permission to execute script in delta-spark volume
+# Local host
+find ./delta-spark/volume -type f -exec chmod +x {} \;
+ls -l ./delta-spark/volume/
 
+docker exec -it delta-spark ./volume/DeltaTableStockSymbols.sh
+docker exec -it delta-spark ./volume/DeltaTableStockPriceCreate.sh
+docker exec -it delta-spark ./volume/DeltaTableStockPriceReadLoop.sh
+docker exec -it delta-spark ./volume/DeltaTableStockPriceUpdateLoop.sh
+-------
+docker start namenode datanode1 datanode2 resourcemanager nodemanager delta-spark
+docker restart namenode datanode1 datanode2 resourcemanager nodemanager delta-spark

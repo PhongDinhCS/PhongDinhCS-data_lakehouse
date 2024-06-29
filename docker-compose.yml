@@ -28,11 +28,13 @@ services:
     ports:
       - 9870:9870
     env_file:
-      - ./config
+      - ./hadoop/config
+
     environment:
       ENSURE_NAMENODE_DIR: "/hadoop/dfs/name"
     volumes:
       - ./hadoop/dfs/name:/hadoop/dfs/name
+      - hadoop-bin:/opt/hadoop # Share the hadoop bin directory
     networks:
       lakehouse_network:
         ipv4_address: 172.18.0.98
@@ -43,7 +45,7 @@ services:
     image: apache/hadoop:3
     command: ["hdfs", "datanode"]
     env_file:
-      - ./config  
+      - ./hadoop/config
     volumes:
       - ./hadoop/dfs/data1:/hadoop/dfs/data
     networks:
@@ -55,7 +57,7 @@ services:
     image: apache/hadoop:3
     command: ["hdfs", "datanode"]
     env_file:
-      - ./config
+      - ./hadoop/config
     volumes:
       - ./hadoop/dfs/data2:/hadoop/dfs/data
     networks:
@@ -70,7 +72,7 @@ services:
     ports:
         - 8088:8088
     env_file:
-      - ./config
+      - ./hadoop/config
     volumes:
       - ./hadoop/test.sh:/opt/test.sh
     networks:
@@ -86,7 +88,7 @@ services:
     image: apache/hadoop:3
     command: ["yarn", "nodemanager"]
     env_file:
-      - ./config
+      - ./hadoop/config
     networks:
       lakehouse_network:
         ipv4_address: 172.18.0.93
@@ -97,11 +99,28 @@ services:
   delta-spark:
     container_name: delta-spark
     image: deltaio/delta-docker:latest
-    entrypoint: ["bash", "-c", "while true; do sleep 30; done;"]
+    entrypoint:
+      - bash
+      - -c
+      - |
+        if ! hdfs dfs -test -d hdfs://namenode:8020/lakehouse; then
+          hdfs dfs -mkdir hdfs://namenode:8020/lakehouse
+          hdfs dfs -chmod 777 hdfs://namenode:8020/lakehouse
+        fi
+        tail -f /dev/null 
+    volumes:
+      - hadoop-bin:/opt/hadoop # Share the hadoop bin directory
+      - ./delta-spark/volume:/opt/spark/work-dir/volume
+    environment:
+      - HADOOP_HOME=/opt/hadoop
+      - HADOOP_CONF_DIR=/opt/hadoop/etc/hadoop
+      - PATH=/opt/hadoop/bin:$PATH
+      - HADOOP_USER_NAME=hdfs
     networks:
       lakehouse_network:
         ipv4_address: 172.18.0.92
-    restart: unless-stopped
+    depends_on:
+      - namenode
 
 networks:
   lakehouse_network:
@@ -112,5 +131,4 @@ networks:
          gateway: 172.18.0.1
 
 volumes:
-  backend_data:
-  kafka_data:
+  hadoop-bin:

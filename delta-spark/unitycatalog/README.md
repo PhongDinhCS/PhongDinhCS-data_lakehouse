@@ -1,0 +1,181 @@
+<img src="./docs/assets/images/uc-logo.png" width="600px" />
+
+# Unity Catalog: Open, Multimodal Catalog for Data & AI
+Unity Catalog is the industry’s only universal catalog for data and AI.
+
+- **Multimodal interface supports any format, engine, and asset**
+  - Multi-format support: It is extensible and supports Delta Lake, Apache Iceberg and Apache Hudi via UniForm, Apache Parquet, JSON, CSV, and many others.
+  - Multi-engine support: With its open APIs, data cataloged in Unity can be read by many leading compute engines.
+  - Multimodal: It supports all your data and AI assets, including tables, files, functions, AI models.
+- **Open source API and implementation** - OpenAPI spec and OSS implementation (Apache 2.0 license). It is also compatible with Apache Hive's metastore API and Apache Iceberg's REST catalog API. Unity Catalog is currently a sandbox project with LF AI and Data Foundation (part of the Linux Foundation).
+- **Unified governance** for data and AI - Govern and secure tabular data, unstructured assets, and AI assets with a single interface.
+
+The first release of Unity Catalog focuses on a core set of APIs for tables, unstructured data, and AI assets - with more to come soon on governance, access, and client interoperability. This is just the beginning!
+
+![image info](./docs/assets/images/uc.png)
+
+### Vibrant ecosystem
+This is a community effort. Unity Catalog is supported by
+- [Amazon Web Services](https://aws.amazon.com/)
+- [Confluent](https://www.confluent.io/)
+- [Daft (Eventual)](https://github.com/Eventual-Inc/Daft)
+- [dbt Labs](https://www.getdbt.com/)
+- [DuckDB](https://duckdblabs.com/)
+- [Fivetran](https://www.fivetran.com/)
+- [Google Cloud](https://cloud.google.com/)
+- [Granica](https://granica.ai/)
+- [Immuta](https://www.immuta.com/)
+- [Informatica](https://www.informatica.com/)
+- [LanceDB](https://lancedb.com/)
+- [LangChain](https://www.langchain.com/)
+- [LlamaIndex](https://www.llamaindex.ai/)
+- [Microsoft Azure](https://azure.microsoft.com)
+- [NVIDIA](https://www.nvidia.com/)
+- [Onehouse](https://www.onehouse.ai/)
+- [PuppyGraph](https://www.puppygraph.com/)
+- [Salesforce](https://www.salesforce.com/)
+- [StarRocks (CelerData)](https://celerdata.com/)
+- [Tecton](https://www.tecton.ai/)
+- [Unstructured](https://unstructured.io/)
+
+Unity Catalog is proud to be hosted by the LF AI & Data Foundation.
+
+<a href="https://lfaidata.foundation/projects">
+  <img src="./docs/assets/images/lfaidata-project-badge-sandbox-color.png" width="200px" />
+</a>
+
+## Quickstart - Hello UC!
+Let's take Unity Catalog for spin. In this guide, we are going to do the following:
+- In one terminal, run the UC server.
+- In another terminal, we will explore the contents of the UC server using a CLI. 
+  An example project is provided to demonstrate how to use the UC SDK for various assets
+  as well as provide a convenient way to explore the content of any UC server implementation.
+
+### Prerequisites
+You have to ensure that your local environment has the following:
+- Clone this repository.
+- Ensure the `JAVA_HOME` environment variable your terminal is configured to point to JDK11+.
+- Compile the project using `build/sbt package`
+
+### Run the UC Server
+In a terminal, in the cloned repository root directory, start the UC server.
+
+```sh
+bin/start-uc-server
+```
+
+For the rest of the steps, continue in a different terminal.
+
+### Operate on Delta tables with the CLI
+Let's list the tables. 
+```sh
+bin/uc table list --catalog unity --schema default
+```
+You should see a few tables. Some details are truncated because of the nested nature of the data.
+To see all the content, you can add `--output jsonPretty` to any command.
+
+Next, let's get the metadata of one of those tables. 
+
+```sh
+bin/uc table get --full_name unity.default.numbers
+```
+
+You can see that it is a Delta table. Now, specifically for Delta tables, this CLI can
+print snippet of the contents of a Delta table (powered by the [Delta Kernel Java](https://delta.io/blog/delta-kernel/) project).
+Let's try that.
+
+```sh
+bin/uc table read --full_name unity.default.numbers
+```
+
+### Operate on Delta tables with DuckDB
+
+For trying with DuckDB, you will have to [install it](https://duckdb.org/docs/installation/) (at least version 1.0).
+Let's start DuckDB and install a couple of extensions. To start DuckDB, run the command `duckdb` in the terminal.
+Then, in the DuckDB shell, run the following commands:
+```sql
+install uc_catalog from core_nightly;
+load uc_catalog;
+install delta;
+load delta;
+```
+If you have installed these extensions before, you may have to run `update extensions` and restart DuckDB 
+for the following steps to work.
+
+Now that we have DuckDB all set up, let's try connecting to UC by specifying a secret. 
+```sql
+CREATE SECRET (
+      TYPE UC,
+      TOKEN 'not-used',
+      ENDPOINT 'http://127.0.0.1:8080',
+      AWS_REGION 'us-east-2'
+ );
+```
+You should see it print a short table saying `Success` = `true`. Then we attach the `unity` catalog to DuckDB.
+```sql
+ATTACH 'unity' AS unity (TYPE UC_CATALOG);
+```
+Now we are ready to query. Try the following
+
+```sql
+SHOW ALL TABLES;
+SELECT * from unity.default.numbers;
+```
+
+You should see the tables listed and the contents of the `numbers` table printed.
+To quit DuckDB, run the command `Ctrl+D` or type `.exit` in the DuckDB shell.
+
+## Full Tutorial
+
+You can read Delta Uniform tables from Spark via Iceberg REST Catalog APIs,
+operate on volumes and functions from the CLI, and much more.
+See the full [tutorial](docs/tutorial.md) for more details.
+
+## APIs and Compatibility
+- Open API specification: The Unity Catalog Rest API is documented [here](api).
+- Compatibility and stability: The APIs are currently evolving and should not be assumed to be stable.
+
+## Compiling and testing
+- Install JDK 11 by whatever mechanism is appropriate for your system, and
+  set that version to be the default Java version (e.g., by setting env variable
+  JAVA_HOME)
+- To compile all the code without running tests, run the following:
+  ```sh
+  build/sbt clean compile
+  ```
+- To compile and execute tests, run the following:
+  ```sh
+  build/sbt clean test
+  ```
+- To update the API specification, just update the `api/all.yaml` and then run the following:
+  ```sh
+  build/sbt generate
+  ``` 
+  This will regenerate the OpenAPI data models in the UC server and data models + APIs in the client SDK.
+
+### Using more recent JDKs
+
+The build script [checks for a lower bound on the JDK](./build.sbt#L14) but the [current SBT version](./project/build.properties)
+imposes an upper bound. Please check the [JDK compatibility](https://docs.scala-lang.org/overviews/jdk-compatibility/overview.html) documentation for more information
+
+
+### Serving the documentation with mkdocs
+
+Create a virtual environment:
+
+```sh
+python -m venv venv
+. ./venv/bin/activate 
+``` 
+
+Install the required dependencies:
+
+```sh
+pip install -r requirements-docs.txt
+```
+
+Then serve the docs with
+
+```sh
+mkdocs serve
+```

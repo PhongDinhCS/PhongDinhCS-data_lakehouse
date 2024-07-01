@@ -134,6 +134,7 @@ docker cp ./backend/DeltaTableTestReadAuto.scala delta-spark:/opt/spark/work-dir
 ---------
 #Grand permission to execute script in delta-spark volume
 # Local host
+chmod -R 777 ./delta-spark/volume/
 find ./delta-spark/volume -type f -exec chmod +x {} \;
 ls -l ./delta-spark/volume/
 
@@ -144,3 +145,22 @@ docker exec -it delta-spark ./volume/DeltaTableStockPriceUpdateLoop.sh
 -------
 docker start namenode datanode1 datanode2 resourcemanager nodemanager delta-spark
 docker restart namenode datanode1 datanode2 resourcemanager nodemanager delta-spark
+-------
+apt-get update
+apt-get install -y openjdk-11-jdk
+java -version
+# Download the sbt launcher script
+curl -sL "https://github.com/sbt/sbt/releases/download/v1.5.5/sbt-1.5.5.tgz" | tar zx -C /usr/local
+
+# Create a symbolic link to sbt
+ln -s /usr/local/sbt/bin/sbt /usr/bin/sbt
+sbt sbtVersion
+cd /opt/spark/work-dir/volume/sbt
+sbt package
+
+spark-submit --class DeltaTableStockPriceReadLoop --master local[2] \
+  --packages io.delta:delta-core_2.12:1.0.0 \
+  /opt/spark/work-dir/volume/sbt/target/scala-2.12/deltastockpricereadloop_2.12-1.0.jar
+
+------------------
+

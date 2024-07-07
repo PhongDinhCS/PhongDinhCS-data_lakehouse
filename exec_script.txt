@@ -5,6 +5,7 @@ docker stop namenode datanode datanode2 datanode3 resourcemanager nodemanager
 docker rm namenode datanode datanode2 datanode3 resourcemanager nodemanager
 docker-compose up -d namenode datanode datanode2 datanode3 resourcemanager nodemanager
 docker restart namenode datanode datanode2 datanode3 resourcemanager nodemanager
+docker start namenode datanode1 datanode2 resourcemanager nodemanager postgresql hive-metastore delta-spark
 
 // run this script to grant permission for other users can write to namenode hdfs 
 // Local host
@@ -163,4 +164,16 @@ spark-submit --class DeltaTableStockPriceReadLoop --master local[2] \
   /opt/spark/work-dir/volume/sbt/target/scala-2.12/deltastockpricereadloop_2.12-1.0.jar
 
 ------------------
+pip install pyspark
+pip install jupyter
+jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root
+jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root --NotebookApp.token='' --NotebookApp.password=''
 
+-----------------
+echo 'export PATH=$PATH:/usr/local/openjdk-11/bin' >> ~/.bashrc
+source ~/.bashrc
+------
+spark-sql --packages io.delta:delta-core_2.12:2.1.1
+--------------
+docker exec -it postgresql bash
+psql -U postgres

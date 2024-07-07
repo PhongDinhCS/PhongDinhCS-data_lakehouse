@@ -1,0 +1,6 @@
+CORE_SITE_XML_fs_defaultFS=hdfs://namenode:8020
+
+HDFS_SITE_XML_dfs_namenode_rpc_address=namenode:8020
+HDFS_SITE_XML_dfs_replication=1
+HDFS_SITE_XML_dfs_namenode_name_dir=/hadoop/dfs/name
+HDFS_SITE_XML_dfs_datanode_data_dir=/hadoop/dfs/data

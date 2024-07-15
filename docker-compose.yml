@@ -28,10 +28,11 @@ services:
     ports:
       - 9870:9870
       - 8020:8020
+      - 9000:9000
     env_file:
       - ./hadoop/config
     environment:
-      - ENSURE_NAMENODE_DIR=/hadoop/dfs/name
+      # - ENSURE_NAMENODE_DIR=/hadoop/dfs/name
       - SPARK_SQL_CATALOG_IMPLEMENTATION=hive
       - HIVE_METASTORE_URIS=thrift://hive-metastore:9083
     volumes:
@@ -97,28 +98,80 @@ services:
     depends_on:
       - resourcemanager
 
-  hive-metastore-postgresql:
-    image: bde2020/hive-metastore-postgresql:2.3.0
-    container_name: postgresql
+  postgres:
+    image: postgres:11
+    restart: unless-stopped
+    container_name: postgres
+    hostname: postgres
+    environment:
+      POSTGRES_DB: 'metastore_db'
+      POSTGRES_USER: 'hive'
+      POSTGRES_PASSWORD: 'hive'
     ports:
-      - 5432:5432
+      - '5432:5432'
     volumes:
-      - postgresql-data:/var/lib/postgresql/data
+      - hive-db:/var/lib/postgresql
     networks:
+      hive:
       lakehouse_network:
         ipv4_address: 172.18.0.91
 
-  hive-metastore:
-    image: bde2020/hive:2.3.2-postgresql-metastore
-    container_name: hive-metastore
-    env_file:
-      - ./hive/hadoop-hive.env
-    command: /opt/hive/bin/hive --service metastore
+  metastore:
+    image: apache/hive:3.1.3
+    depends_on:
+      - postgres
+    restart: unless-stopped
+    container_name: metastore
+    hostname: metastore
+    environment:
+      HIVE_CONF_DIR: /opt/hive/conf
+      DB_DRIVER: postgres
+      IS_RESUME: 'true'
+      SERVICE_NAME: 'metastore'
+      SERVICE_OPTS: '-Xmx1G -Djavax.jdo.option.ConnectionDriverName=org.postgresql.Driver
+                     -Djavax.jdo.option.ConnectionURL=jdbc:postgresql://postgres:5432/metastore_db
+                     -Djavax.jdo.option.ConnectionUserName=hive
+                     -Djavax.jdo.option.ConnectionPassword=hive'
     ports:
-      - 9083:9083
+        - '9083:9083'
+    volumes:
+        - ./hive/conf/hive-site.xml:/opt/hive/conf/hive-site.xml
+        - ./hadoop/core-site.xml:/opt/hive/conf/core-site.xml
+        - ./hadoop/hdfs-site.xml:/opt/hive/conf/hdfs-site.xml
+        - ./hadoop/yarn-site.xml:/opt/hive/conf/yarn-site.xml
+        - type: bind
+          source: ./hive/postgresql-42.2.27.jre6.jar
+          target: /opt/hive/lib/postgres.jar
     networks:
+      hive:
       lakehouse_network:
         ipv4_address: 172.18.0.90
+
+  hiveserver2:
+    image: apache/hive:3.1.3
+    depends_on:
+      - metastore
+    restart: unless-stopped
+    container_name: hiveserver2
+    environment:
+      HIVE_SERVER2_THRIFT_PORT: 10000
+      SERVICE_OPTS: '-Xmx1G -Dhive.metastore.uris=thrift://metastore:9083'
+      IS_RESUME: 'true'
+      SERVICE_NAME: 'hiveserver2'
+      HIVE_CONF_DIR: /opt/hive/conf
+    ports:
+      - '10000:10000'
+      - '10002:10002'
+    volumes:
+      - ./hive/conf/hive-site.xml:/opt/hive/conf/hive-site.xml
+      - ./hadoop/core-site.xml:/opt/hive/conf/core-site.xml
+      - ./hadoop/hdfs-site.xml:/opt/hive/conf/hdfs-site.xml
+      - ./hadoop/yarn-site.xml:/opt/hive/conf/yarn-site.xml
+    networks:
+      hive:
+      lakehouse_network:
+        ipv4_address: 172.18.0.89
+
 
 # Delta Spark container
   delta-spark:
@@ -146,6 +199,8 @@ services:
       - SPARK_MODE=master
       - SPARK_SQL_CATALOG_IMPLEMENTATION=hive
       - HIVE_METASTORE_URIS=thrift://hive-metastore:9083
+    env_file:
+      - ./hive/hadoop-hive.env 
     networks:
       lakehouse_network:
         ipv4_address: 172.18.0.92
@@ -155,9 +210,10 @@ services:
       - "4040:4040"
     depends_on:
       - namenode
-      - hive-metastore
 
 networks:
+  hive:
+    name: hive
   lakehouse_network:
     driver: bridge
     ipam:
@@ -169,3 +225,5 @@ volumes:
   hadoop-bin:
   spark-data:
   postgresql-data:
+  hive-db:
+  warehouse:

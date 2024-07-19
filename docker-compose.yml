@@ -8,7 +8,7 @@ services:
     ports:
       - "9092:9092"  # Expose Kafka port (default 9092)
     networks:
-      lakehouse_network:
+      lakehouse:
         ipv4_address: 172.18.0.99
         aliases:
           - kafka
@@ -31,15 +31,13 @@ services:
       - 9000:9000
     env_file:
       - ./hadoop/config
-    environment:
-      # - ENSURE_NAMENODE_DIR=/hadoop/dfs/name
-      - SPARK_SQL_CATALOG_IMPLEMENTATION=hive
-      - HIVE_METASTORE_URIS=thrift://hive-metastore:9083
+    # environment:
+    #   - ENSURE_NAMENODE_DIR=/hadoop/dfs/name
     volumes:
       - ./hadoop/dfs/name:/hadoop/dfs/name
       - hadoop-bin:/opt/hadoop # Share the hadoop bin directory
     networks:
-      lakehouse_network:
+      lakehouse:
         ipv4_address: 172.18.0.98
     # run this script in namenode after run docker-compose: docker exec -it namenode bash hdfs dfs -chmod 777 /
 
@@ -52,7 +50,7 @@ services:
     volumes:
       - ./hadoop/dfs/data1:/hadoop/dfs/data
     networks:
-      lakehouse_network:
+      lakehouse:
         ipv4_address: 172.18.0.97
 
   datanode2:
@@ -64,7 +62,7 @@ services:
     volumes:
       - ./hadoop/dfs/data2:/hadoop/dfs/data
     networks:
-      lakehouse_network:
+      lakehouse:
         ipv4_address: 172.18.0.96
 
   resourcemanager:
@@ -79,7 +77,7 @@ services:
     volumes:
       - ./hadoop/test.sh:/opt/test.sh
     networks:
-      lakehouse_network:
+      lakehouse:
         ipv4_address: 172.18.0.94
     depends_on:
       - namenode
@@ -93,7 +91,7 @@ services:
     env_file:
       - ./hadoop/config
     networks:
-      lakehouse_network:
+      lakehouse:
         ipv4_address: 172.18.0.93
     depends_on:
       - resourcemanager
@@ -112,8 +110,7 @@ services:
     volumes:
       - hive-db:/var/lib/postgresql
     networks:
-      hive:
-      lakehouse_network:
+      lakehouse:
         ipv4_address: 172.18.0.91
 
   metastore:
@@ -128,10 +125,10 @@ services:
       DB_DRIVER: postgres
       IS_RESUME: 'true'
       SERVICE_NAME: 'metastore'
-      SERVICE_OPTS: '-Xmx1G -Djavax.jdo.option.ConnectionDriverName=org.postgresql.Driver
-                     -Djavax.jdo.option.ConnectionURL=jdbc:postgresql://postgres:5432/metastore_db
-                     -Djavax.jdo.option.ConnectionUserName=hive
-                     -Djavax.jdo.option.ConnectionPassword=hive'
+      # SERVICE_OPTS: '-Xmx1G -Djavax.jdo.option.ConnectionDriverName=org.postgresql.Driver
+      #                -Djavax.jdo.option.ConnectionURL=jdbc:postgresql://postgres:5432/metastore_db
+      #                -Djavax.jdo.option.ConnectionUserName=hive
+      #                -Djavax.jdo.option.ConnectionPassword=hive'
     ports:
         - '9083:9083'
     volumes:
@@ -143,8 +140,7 @@ services:
           source: ./hive/postgresql-42.2.27.jre6.jar
           target: /opt/hive/lib/postgres.jar
     networks:
-      hive:
-      lakehouse_network:
+      lakehouse:
         ipv4_address: 172.18.0.90
 
   hiveserver2:
@@ -155,7 +151,7 @@ services:
     container_name: hiveserver2
     environment:
       HIVE_SERVER2_THRIFT_PORT: 10000
-      SERVICE_OPTS: '-Xmx1G -Dhive.metastore.uris=thrift://metastore:9083'
+      # SERVICE_OPTS: '-Xmx1G -Dhive.metastore.uris=thrift://metastore:9083'
       IS_RESUME: 'true'
       SERVICE_NAME: 'hiveserver2'
       HIVE_CONF_DIR: /opt/hive/conf
@@ -168,8 +164,7 @@ services:
       - ./hadoop/hdfs-site.xml:/opt/hive/conf/hdfs-site.xml
       - ./hadoop/yarn-site.xml:/opt/hive/conf/yarn-site.xml
     networks:
-      hive:
-      lakehouse_network:
+      lakehouse:
         ipv4_address: 172.18.0.89
 
 
@@ -186,23 +181,28 @@ services:
           hdfs dfs -chmod 777 hdfs://namenode:8020/lakehouse
         fi
         tail -f /dev/null 
+      # chmod +x /opt/spark/work-dir/startup.sh
+      # /opt/spark/work-dir/startup.sh
     volumes:
       - hadoop-bin:/opt/hadoop # Share the hadoop bin directory
       - ./delta-spark/volume:/opt/spark/work-dir/volume
-      - ./delta-spark/conf:/opt/spark/conf
       - spark-data:/opt/spark/data
+      - ./hive/conf/hive-site.xml:/opt/spark/conf/hive-site.xml
+      - ./hadoop/core-site.xml:/opt/spark/conf/core-site.xml
+      - ./hadoop/hdfs-site.xml:/opt/spark/conf/hdfs-site.xml
+      - ./hadoop/yarn-site.xml:/opt/spark/conf/yarn-site.xml
     environment:
+      - DELTA_PACKAGE_VERSION=delta-core_2.12:2.3.0
+      - SPARK_CONF_DIR=/opt/spark/conf
       - HADOOP_HOME=/opt/hadoop
       - HADOOP_CONF_DIR=/opt/hadoop/etc/hadoop
-      - PATH=/opt/hadoop/bin:$PATH
-      - HADOOP_USER_NAME=hdfs
+      - PATH=/opt/spark/bin:/opt/hadoop/bin:$PATH
+      - HADOOP_USER_NAME=hadoop
       - SPARK_MODE=master
       - SPARK_SQL_CATALOG_IMPLEMENTATION=hive
-      - HIVE_METASTORE_URIS=thrift://hive-metastore:9083
-    env_file:
-      - ./hive/hadoop-hive.env 
+      # - HIVE_METASTORE_URIS=thrift://metastore:9083
     networks:
-      lakehouse_network:
+      lakehouse:
         ipv4_address: 172.18.0.92
     ports:
       - "8888:8888"
@@ -212,9 +212,8 @@ services:
       - namenode
 
 networks:
-  hive:
-    name: hive
-  lakehouse_network:
+  lakehouse:
+    name: lakehouse
     driver: bridge
     ipam:
      config:

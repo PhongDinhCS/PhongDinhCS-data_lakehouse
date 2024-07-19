@@ -5,7 +5,7 @@ docker stop namenode datanode datanode2 datanode3 resourcemanager nodemanager
 docker rm namenode datanode datanode2 datanode3 resourcemanager nodemanager
 docker-compose up -d namenode datanode datanode2 datanode3 resourcemanager nodemanager
 docker restart namenode datanode1 datanode2 resourcemanager nodemanager
-docker start namenode datanode1 datanode2 resourcemanager nodemanager hive delta-spark
+docker start namenode datanode1 datanode2 resourcemanager nodemanager delta-spark
 docker stop metastore postgres hiveserver2
 docker rm metastore postgres hiveserver2
 docker-compose up -d postgres metastore hiveserver2
@@ -185,4 +185,4 @@ spark-sql --packages io.delta:delta-core_2.12:2.1.1
 docker exec -it postgresql bash
 
 --------------
-
+./startup.sh 

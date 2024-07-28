@@ -57,6 +57,10 @@
         <value>hdfs://namenode:8020/</value>
     </property>
     <property>
+        <name>spark.sql.warehouse.dir</name>
+        <value>hdfs://namenode:8020/</value>
+    </property>
+    <property>
         <name>metastore.metastore.event.db.notification.api.auth</name>
         <value>false</value>
     </property>
@@ -74,10 +78,10 @@
     </property>
     <property>
         <name>javax.jdo.option.ConnectionPassword</name>
-        <value>hive</value>
+        <value>hadoop</value>
     </property>
     <property>
         <name>javax.jdo.option.ConnectionUserName</name>
-        <value>hive</value>
+        <value>hadoop</value>
     </property>
 </configuration>

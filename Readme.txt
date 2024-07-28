@@ -1,20 +1,11 @@
-# make sure that you run (chmod +x create_topic.sh) from the directory STOCK_ANALYSIS_APP before run (sudo docker-compose up)
+# make sure that you run (chmod +x create_topic.sh)
 #docker-compose up --build -d
-
-# run this code to check list of Topics (sudo docker-compose exec kafka kafka-topics.sh --list --bootstrap-server localhost:9092)
-# run this code to open producer and consumer
-#sudo docker-compose exec kafka /opt/bitnami/kafka/bin/kafka-console-producer.sh --topic default_topic --bootstrap-server localhost:9092
-#sudo docker-compose exec kafka /opt/bitnami/kafka/bin/kafka-console-consumer.sh --topic default_topic --from-beginning --bootstrap-server localhost:9092
 
 Instructions:
 Ensure you run chmod +x create_topic.sh before starting the services.
 Use docker-compose up -d to start all services.
 Check the list of topics with sudo docker-compose exec kafka kafka-topics.sh --list --bootstrap-server localhost:9092.
 Use docker exec -it hiveserver2 beeline -u 'jdbc:hive2://hiveserver2:10000/' to interact with Hive.
-
-
-ubuntu2020@ubuntu2020-virtual-machine:/etc$ sudo nano /etc/hosts
-[sudo] password for ubuntu2020: 
 
 # Docker containers in phongdt_data_lakehouse_architecture_research_lakehouse_network
 

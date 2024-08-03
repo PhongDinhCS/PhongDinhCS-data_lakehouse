@@ -132,7 +132,7 @@ services:
     environment:
       HIVE_CONF_DIR: /opt/hive/conf
       DB_DRIVER: postgres
-      IS_RESUME: 'true'
+      IS_RESUME: 'true' #importain: if you build this container the first time, let comment out this line #IS_RESUME: 'true', if restart the container let Resume true
       SERVICE_NAME: 'metastore'
       # SERVICE_OPTS: '-Xmx1G -Djavax.jdo.option.ConnectionDriverName=org.postgresql.Driver
       #                -Djavax.jdo.option.ConnectionURL=jdbc:postgresql://postgres:5432/metastore_db

@@ -213,9 +213,10 @@ services:
       lakehouse:
         ipv4_address: 172.18.0.92
     ports:
-      - "8888:8888"
-      - "7077:7077"
-      - "4040:4040"
+      - "8888:8888"  # Jupyter Notebook
+      - "7077:7077"  # Spark Master
+      - "4040:4040"  # Spark Web UI
+      - "5000:5000"  # Flask API
     depends_on:
       - namenode
 

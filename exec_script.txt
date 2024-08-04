@@ -122,6 +122,9 @@ while (true) {
 
 ---------------------------------------------------------------------------------
 // git _ Local_host
+git config --global user.name "PhongDinhCS"
+git config --global user.email "phongdinhcs@gmail.com"
+
 git add .
 git commit -m "..."
 git push origin main

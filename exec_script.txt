@@ -189,3 +189,12 @@ docker exec -it postgresql bash
 
 --------------
 ./startup.sh 
+-------------
+docker exec -it delta-spark bash -c "chmod +x /opt/spark/work-dir/startup.sh"
+docker exec -it delta-spark bash "/opt/spark/work-dir/startup.sh"
+
+docker exec -it delta-spark bash -c "pip install kafka-python"
+docker exec -it delta-spark bash -c "pip install Flask pyspark"
+docker exec -it delta-spark bash -c "python3 /opt/spark/work-dir/volume/testsample/flask_app.py"
+
+http://localhost:5000/api/stocks

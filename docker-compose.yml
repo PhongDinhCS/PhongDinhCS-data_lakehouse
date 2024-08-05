@@ -191,7 +191,7 @@ services:
       - SPARK_CONF_DIR=/opt/spark/conf
       - HADOOP_HOME=/opt/hadoop
       - HADOOP_CONF_DIR=/opt/hadoop/etc/hadoop
-      - PATH=/opt/spark/bin:/opt/hadoop/bin:/opt/kafka/bin:$PATH
+      - PATH=/opt/spark/bin:/opt/hadoop/bin:/opt/kafka/bin:/home/NBuser/.local/bin:/home/NBuser/.local/lib/python3.9/site-packages:$PATH
       - HADOOP_USER_NAME=hadoop
       - SPARK_MODE=master
       - SPARK_SQL_CATALOG_IMPLEMENTATION=hive
@@ -207,6 +207,11 @@ services:
       - namenode
 # docker exec -it delta-spark bash -c "chmod +x /opt/spark/work-dir/startup.sh"
 # docker exec -it delta-spark bash "/opt/spark/work-dir/startup.sh"
+
+# docker exec -it delta-spark bash -c "pip install kafka-python"
+# docker exec -it delta-spark bash -c "pip install Flask pyspark"
+# docker exec -it delta-spark bash -c "python3 /opt/spark/work-dir/volume/testsample/flask_app.py"
+# http://localhost:5000/api/stocks
 
 networks:
   lakehouse:

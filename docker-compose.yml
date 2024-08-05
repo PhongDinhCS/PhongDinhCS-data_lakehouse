@@ -4,25 +4,15 @@ services:
 # build kafka container
   kafka:
     container_name: kafka
+    restart: unless-stopped
     image: apache/kafka:3.8.0
     ports:
       - 9092:9092  # Expose Kafka port (default 9092)
-    # environment:
-    #   - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://172.18.0.99:9092
-    #   - KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9092
-    #   - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT
-    #   - KAFKA_LISTENER_NAME=PLAINTEXT
     volumes:
       - ./kafka/config:/mnt/shared/config
     networks:
       lakehouse:
         ipv4_address: 172.18.0.99
-
-#install hadoop hdfs docker container
-#docker stop namenode datanode1 datanode2 resourcemanager nodemanager
-#docker rm namenode datanode1 datanode2 resourcemanager nodemanager
-#docker-compose up -d namenode datanode1 datanode2 resourcemanager nodemanager
-#docker restart namenode datanode1 datanode2 resourcemanager nodemanager
 
   namenode:
     container_name: namenode
@@ -40,6 +30,7 @@ services:
     #   - ENSURE_NAMENODE_DIR=/hadoop/dfs/name
     volumes:
       - ./hadoop/dfs/name:/hadoop/dfs/name
+      # - name:/hadoop/dfs/name
       - hadoop-bin:/opt/hadoop # Share the hadoop bin directory
     networks:
       lakehouse:
@@ -55,6 +46,7 @@ services:
       - ./hadoop/config
     volumes:
       - ./hadoop/dfs/data1:/hadoop/dfs/data
+      # - data1:/hadoop/dfs/data
     networks:
       lakehouse:
         ipv4_address: 172.18.0.97
@@ -68,6 +60,7 @@ services:
       - ./hadoop/config
     volumes:
       - ./hadoop/dfs/data2:/hadoop/dfs/data
+      # - data2:/hadoop/dfs/data
     networks:
       lakehouse:
         ipv4_address: 172.18.0.96
@@ -132,12 +125,8 @@ services:
     environment:
       HIVE_CONF_DIR: /opt/hive/conf
       DB_DRIVER: postgres
-      IS_RESUME: 'true' #importain: if you build this container the first time, let comment out this line #IS_RESUME: 'true', if restart the container let Resume true
+      # IS_RESUME: 'true' #importain: if you build this container the first time, let comment out this line #IS_RESUME: 'true', if restart the container let Resume true
       SERVICE_NAME: 'metastore'
-      # SERVICE_OPTS: '-Xmx1G -Djavax.jdo.option.ConnectionDriverName=org.postgresql.Driver
-      #                -Djavax.jdo.option.ConnectionURL=jdbc:postgresql://postgres:5432/metastore_db
-      #                -Djavax.jdo.option.ConnectionUserName=hadoop
-      #                -Djavax.jdo.option.ConnectionPassword=hadoop'
     ports:
         - '9083:9083'
     volumes:
@@ -160,7 +149,6 @@ services:
     container_name: hiveserver2
     environment:
       HIVE_SERVER2_THRIFT_PORT: 10000
-      # SERVICE_OPTS: '-Xmx1G -Dhive.metastore.uris=thrift://metastore:9083'
       IS_RESUME: 'true'
       SERVICE_NAME: 'hiveserver2'
       HIVE_CONF_DIR: /opt/hive/conf
@@ -181,7 +169,7 @@ services:
   delta-spark:
     container_name: delta-spark
     restart: unless-stopped
-    image: deltaio/delta-docker:latest
+    image: deltaio/delta-docker:0.8.1_2.3.0
     entrypoint:
       - bash
       - -c
@@ -191,8 +179,6 @@ services:
           hdfs dfs -chmod 777 hdfs://namenode:8020/lakehouse
         fi
         tail -f /dev/null 
-      # docker exec -it delta-spark bash -c "chmod +x /opt/spark/work-dir/startup.sh"
-      # docker exec -it delta-spark bash "/opt/spark/work-dir/startup.sh"
     volumes:
       - hadoop-bin:/opt/hadoop # Share the hadoop bin directory
       - ./delta-spark/volume:/opt/spark/work-dir/volume
@@ -219,6 +205,8 @@ services:
       - "5000:5000"  # Flask API
     depends_on:
       - namenode
+# docker exec -it delta-spark bash -c "chmod +x /opt/spark/work-dir/startup.sh"
+# docker exec -it delta-spark bash "/opt/spark/work-dir/startup.sh"
 
 networks:
   lakehouse:
@@ -230,6 +218,9 @@ networks:
          gateway: 172.18.0.1
 
 volumes:
+  # name:
+  # data1:
+  # data2:
   hadoop-bin:
   postgresql:
   kafka:

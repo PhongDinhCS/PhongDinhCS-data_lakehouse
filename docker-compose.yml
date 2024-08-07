@@ -1,7 +1,6 @@
 version: '3'
 
 services: 
-# build kafka container
   kafka:
     container_name: kafka
     restart: unless-stopped
@@ -10,6 +9,7 @@ services:
       - 9092:9092  # Expose Kafka port (default 9092)
     volumes:
       - ./kafka/config:/mnt/shared/config
+      - kafka-bin:/opt/kafka # Share the kafka bin directory
     networks:
       lakehouse:
         ipv4_address: 172.18.0.99
@@ -125,7 +125,7 @@ services:
     environment:
       HIVE_CONF_DIR: /opt/hive/conf
       DB_DRIVER: postgres
-      # IS_RESUME: 'true' #importain: if you build this container the first time, let comment out this line #IS_RESUME: 'true', if restart the container let Resume true
+      IS_RESUME: 'true' #importain: if you build this container the first time, let comment out this line #IS_RESUME: 'true', if restart the container let Resume true
       SERVICE_NAME: 'metastore'
     ports:
         - '9083:9083'
@@ -181,6 +181,7 @@ services:
         tail -f /dev/null 
     volumes:
       - hadoop-bin:/opt/hadoop # Share the hadoop bin directory
+      - kafka-bin:/opt/kafka # Share the kafka bin directory
       - ./delta-spark/volume:/opt/spark/work-dir/volume
       - ./hive/conf/hive-site.xml:/opt/spark/conf/hive-site.xml
       - ./hadoop/core-site.xml:/opt/spark/conf/core-site.xml
@@ -205,13 +206,14 @@ services:
       - "5000:5000"  # Flask API
     depends_on:
       - namenode
-# docker exec -it delta-spark bash -c "chmod +x /opt/spark/work-dir/startup.sh"
-# docker exec -it delta-spark bash "/opt/spark/work-dir/startup.sh"
-
 # docker exec -it delta-spark bash -c "pip install kafka-python"
 # docker exec -it delta-spark bash -c "pip install Flask pyspark"
 # docker exec -it delta-spark bash -c "python3 /opt/spark/work-dir/volume/testsample/flask_app.py"
+
 # http://localhost:5000/api/stocks
+
+# docker exec -it delta-spark bash -c "chmod +x /opt/spark/work-dir/startup.sh"
+# docker exec -it delta-spark bash "/opt/spark/work-dir/startup.sh"
 
 networks:
   lakehouse:
@@ -227,5 +229,5 @@ volumes:
   # data1:
   # data2:
   hadoop-bin:
+  kafka-bin:
   postgresql:
-  kafka:

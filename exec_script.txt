@@ -126,7 +126,7 @@ git config --global user.name "PhongDinhCS"
 git config --global user.email "phongdinhcs@gmail.com"
 
 git add .
-git commit -m "compelete version 1.0 - Kafka - Hadoop - Hivemetastore - Postgres - Delta Spark - Flask API  - Jupyter Notebook tested"
+git commit -m "compelete version 1.0 - Kafka - Hadoop - Hivemetastore - Postgres - Delta Spark - Flask API  - Jupyter Notebook tested - TestStock"
 git push origin main
 
 -----------------------------------------------------------------------------------

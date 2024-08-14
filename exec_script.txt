@@ -192,9 +192,17 @@ docker exec -it postgresql bash
 -------------
 docker exec -it delta-spark bash -c "pip install kafka-python"
 docker exec -it delta-spark bash -c "pip install Flask pyspark"
-docker exec -it delta-spark bash -c "python3 /opt/spark/work-dir/volume/testsample/flask_app.py"
-
-http://localhost:5000/api/stocks
+docker exec -it delta-spark bash -c "python3 /opt/spark/work-dir/volume/testsample/test_stocks_flask_app.py"
+http://localhost:5000/api/data?table=stocks
+http://localhost:5000/api/data?table=news
+http://localhost:5000/api/data?table=price
+http://localhost:5000/api/data?table=transaction
 
 docker exec -it delta-spark bash -c "chmod +x /opt/spark/work-dir/startup.sh"
 docker exec -it delta-spark bash "/opt/spark/work-dir/startup.sh"
+
+docker exec -it delta-spark bash -c "python3 /opt/spark/work-dir/volume/testsample/lakehouse_kafka_to_delta_hdfs_stock_news_html.py"
+docker exec -it delta-spark bash -c "python3 /opt/spark/work-dir/volume/testsample/lakehouse_html_push_to_kafka_topic.py"
+docker exec -it delta-spark bash -c "python3 /opt/spark/work-dir/volume/testsample/test_stock_update_price_and_transaction.py"
+--------------
+

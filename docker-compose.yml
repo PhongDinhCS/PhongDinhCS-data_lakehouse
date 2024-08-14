@@ -211,6 +211,8 @@ services:
 # docker exec -it delta-spark bash -c "python3 /opt/spark/work-dir/volume/testsample/test_stocks_flask_app.py"
 # http://localhost:5000/api/data?table=stocks
 # http://localhost:5000/api/data?table=news
+# http://localhost:5000/api/data?table=price
+# http://localhost:5000/api/data?table=transaction
 
 # docker exec -it delta-spark bash -c "chmod +x /opt/spark/work-dir/startup.sh"
 # docker exec -it delta-spark bash "/opt/spark/work-dir/startup.sh"

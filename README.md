@@ -1,5 +1,6 @@
 # Building an On-Premises Data Lakehouse for Big Data Storage and Analysis _ phongdinhcs_data_lakehouse_architecture_research 
 This is my MASTER’S THESIS PROPOSAL in COMPUTER SCIENCE MASTER PROGRAM
+
 Building an On-Premises Data Lakehouse for Big Data Storage and Analysis
 
 For instructions and Operating Manual, please refer to the file Phongdt_Data_Lakehouse_Final_report_summary_EN.pdf ;
@@ -34,4 +35,5 @@ novel.
 Therefore, researching and proposing an on-premises Data Lakehouse architecture for businesses
 that require high security to ensure both efficiency and safety, without relying on external parties, is a
 highly urgent and practical need that many companies are currently concerned with and carefully considering.
+
 ... Please see Phongdt_Data_Lakehouse_Final_report_summary_EN.pdf for more detail...

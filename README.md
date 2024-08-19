@@ -1,4 +1,4 @@
-# phongdinhcs_data_lakehouse_architecture_research Building an On-Premises Data Lakehouse for Big Data Storage and Analysis
+# Building an On-Premises Data Lakehouse for Big Data Storage and Analysis _ phongdinhcs_data_lakehouse_architecture_research 
 This is my MASTER’S THESIS PROPOSAL in COMPUTER SCIENCE MASTER PROGRAM
 Building an On-Premises Data Lakehouse for Big Data Storage and Analysis
 

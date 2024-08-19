@@ -14,11 +14,17 @@ Hive Metastore, PostgreSQL, and Delta Spark, which have been successfully tested
 Jupyter Notebook, and Power BI. All containers were built from official images on Docker Hub.
 
 Image versions:
+
 • apache/kafka:3.8.0
+
 • apache/hadoop:3
+
 • postgres:11
+
 • apache/hive:3.1.3
+
 • deltaio/delta-docker:0.8.1_2.3.0
+
 
 The Need for On-Premises Data Lakehouse:
 We acknowledge the tremendous advantages and utilities provided by Public Cloud platforms.

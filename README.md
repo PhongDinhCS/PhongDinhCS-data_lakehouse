@@ -9,6 +9,9 @@ specifically in the section titled "Instructions for Executing Code Commands."
 The demo architecture has been built and is available on GitHub:
 https://github.com/PhongDinhCS/PhongDinhCS-data_lakehouse
 
+The instruction and demo video has been upload on Youtube:
+https://www.youtube.com/@PhongDinhCS
+
 In the ‘complete-version-1.0‘ repository, I have set up several containers, including Kafka, Hadoop,
 Hive Metastore, PostgreSQL, and Delta Spark, which have been successfully tested with Flask API,
 Jupyter Notebook, and Power BI. All containers were built from official images on Docker Hub.
